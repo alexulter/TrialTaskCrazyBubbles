@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 /// <summary>
 /// Moves the baloon and destroys it when needed;
@@ -10,8 +11,8 @@ public class BaloonMoveDestroy : MonoBehaviour, IPointerDownHandler  {
 	RectTransform rect;
 	public float speed = 1;
 	public int size = 10;
-	float yEdge;
 	GameManager gm;
+	public GameObject particles;
 	
 	void Awake()
 	{
@@ -21,13 +22,13 @@ public class BaloonMoveDestroy : MonoBehaviour, IPointerDownHandler  {
 	
 	void Start () {
 		rect = GetComponent<RectTransform>();
-		//where bubble will die
-		yEdge = -Screen.height/2 + size/2;
 	}
 	
 	void LateUpdate () {
 		//moving the bubble
 		rect.localPosition += new Vector3(0,-speed*Time.smoothDeltaTime,0);
+		//where bubble will die
+		var yEdge = -Screen.height/2 + size/2;
 		if (rect.localPosition.y < yEdge) Remove();	
 	}
 	
@@ -40,6 +41,6 @@ public class BaloonMoveDestroy : MonoBehaviour, IPointerDownHandler  {
 	
 	void Remove()
 	{
-		Destroy(gameObject);
+		gm.RemoveBubble(gameObject);
 	}
 }

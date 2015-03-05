@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
-
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour {
 
@@ -10,21 +10,41 @@ public class GameManager : MonoBehaviour {
 	public float baloonPutPeriod = 0.3f;//0.3f;
 	public float baloonMaxSpeed = 120;
 	public float baloonMinSpeed = 40;
-	Canvas stageCanvas;
+	public int cacheInitialSize = 20;
+	[SerializeField] Canvas stageCanvas;
+	List<GameObject> cachedBubbles = new List<GameObject>();
+	
 	int scores = 0;
 	MyUI UI;
 	
 	IEnumerator Start () {
 		UI = FindObjectOfType<MyUI>();
 		UI.UpdateScores(scores);
-		stageCanvas = FindObjectOfType<Canvas>();
+		for (int i = 0; i < cacheInitialSize; i++)
+		{
+			CreateNewBubble();
+		}
 		while (true)
 		{
-		StartCoroutine(PutNewBaloon());
+		StartCoroutine(PutBaloon());
+		if (cachedBubbles.Count < 2)
+		{
+			CreateNewBubble();
+		}
 		yield return new WaitForSeconds(baloonPutPeriod);
 		}
 	}
 	
+	void CreateNewBubble()
+	{
+		GameObject go = new GameObject("baloon");
+		go.transform.SetParent(stageCanvas.transform);
+		var spr = go.AddComponent<Image>();
+		var move = go.AddComponent<BaloonMoveDestroy>();
+		spr.sprite = Resources.Load<Sprite>("baloon");
+		go.SetActive(false);
+		cachedBubbles.Add(go);
+	}
 	/// <summary>
 	/// Increases the scores, depending on the size of the bubble.
 	/// </summary>
@@ -39,17 +59,17 @@ public class GameManager : MonoBehaviour {
 	/// Generates a bubble with random parameters.
 	/// </summary>
 	/// <returns>A new bubble.</returns>
-	IEnumerator PutNewBaloon()
+	IEnumerator PutBaloon()
 	{
 		//Create GameObject and add all components
-		GameObject go = new GameObject("baloon");
-		go.transform.SetParent(stageCanvas.transform);
-		var spr = go.AddComponent<Image>();
-		var move = go.AddComponent<BaloonMoveDestroy>();
+		if (cachedBubbles.Count == 0) yield break;
+		var go = cachedBubbles[0];
+		cachedBubbles.Remove(go);
+		var spr = go.GetComponent<Image>();
+		var move = go.GetComponent<BaloonMoveDestroy>();
 		RectTransform rect = go.GetComponent<RectTransform>();
 		yield return null;
 		//Set color
-		spr.sprite = Resources.Load<Sprite>("baloon");
 		spr.color = RandomColor();
 		yield return null;
 		//Set size and starting position
@@ -74,5 +94,11 @@ public class GameManager : MonoBehaviour {
 	Color RandomColor()
 	{	
 		return new Color(Random.Range(0f,1f),Random.Range(0f,1f),Random.Range(0f,1f));
+	}
+	
+	public void RemoveBubble(GameObject go)
+	{
+		go.SetActive(false);
+		cachedBubbles.Add(go);
 	}
 }
