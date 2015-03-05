@@ -7,7 +7,6 @@ using UnityEngine.EventSystems;
 /// </summary>
 public class BaloonMoveDestroy : MonoBehaviour, IPointerDownHandler  {
 
-	RectTransform rect;
 	public float speed = 1;
 	public int size = 10;
 	float yEdge;
@@ -16,19 +15,18 @@ public class BaloonMoveDestroy : MonoBehaviour, IPointerDownHandler  {
 	void Awake()
 	{
 		gm = FindObjectOfType<GameManager>();
-		gameObject.SetActive(false);
+		//gameObject.SetActive(false);
 	}
 	
 	void Start () {
-		rect = GetComponent<RectTransform>();
 		//where bubble will die
-		yEdge = -Screen.height/2 + size/2;
+		yEdge = -Camera.main.orthographicSize;//+ size*Camera.main.orthographicSize/2/Screen.height;
 	}
 	
 	void LateUpdate () {
 		//moving the bubble
-		rect.localPosition += new Vector3(0,-speed*Time.smoothDeltaTime,0);
-		if (rect.localPosition.y < yEdge) Remove();	
+		transform.Translate(new Vector3(0,-speed*Time.smoothDeltaTime,0));
+		if (transform.position.y < yEdge) Remove();
 	}
 	
 	//Actions on click on the bubble
@@ -38,8 +36,8 @@ public class BaloonMoveDestroy : MonoBehaviour, IPointerDownHandler  {
 		Remove();
 	}
 	
-	void Remove()
+	public void Remove()
 	{
-		Destroy(gameObject);
+		gm.RemoveBubble(gameObject);
 	}
 }
